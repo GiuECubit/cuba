@@ -707,7 +707,7 @@ public class CubaTable extends com.vaadin.v7.ui.Table implements TableSortableCo
             target.addAttribute("colcubaids", visibleColOrder.toArray());
         }
 
-        if (isLastId(scrollToItemId)) {
+        if (scrollToItemId != null && isLastId(scrollToItemId)) {
             target.addAttribute("scrolltolast", true);
         }
     }
