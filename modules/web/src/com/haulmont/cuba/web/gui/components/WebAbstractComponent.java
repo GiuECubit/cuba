@@ -19,6 +19,7 @@ package com.haulmont.cuba.web.gui.components;
 import com.haulmont.bali.events.EventHub;
 import com.haulmont.bali.events.Subscription;
 import com.haulmont.cuba.core.global.BeanLocator;
+import com.haulmont.cuba.core.global.Configuration;
 import com.haulmont.cuba.gui.ComponentsHelper;
 import com.haulmont.cuba.gui.components.AttachEvent;
 import com.haulmont.cuba.gui.components.AttachNotifier;
@@ -35,7 +36,9 @@ import com.haulmont.cuba.gui.components.sys.FrameImplementation;
 import com.haulmont.cuba.gui.icons.Icons;
 import com.haulmont.cuba.gui.sys.TestIdManager;
 import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
+import com.haulmont.cuba.web.sys.sanitizer.HtmlSanitizer;
 import com.vaadin.server.Resource;
 import com.vaadin.server.Sizeable;
 import com.vaadin.server.UserError;
@@ -321,6 +324,10 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
 
     @Override
     public void setCaption(String caption) {
+        if (isCaptionAsHtml()) {
+            caption = sanitize(caption);
+        }
+
         component.setCaption(caption);
     }
 
@@ -331,7 +338,11 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
 
     @Override
     public void setCaptionAsHtml(boolean captionAsHtml) {
-        ((AbstractComponent) component).setCaptionAsHtml(captionAsHtml);
+        if (isCaptionAsHtml() != captionAsHtml) {
+            ((AbstractComponent) component).setCaptionAsHtml(captionAsHtml);
+
+            setCaption(getCaption());
+        }
     }
 
     @Override
@@ -341,6 +352,10 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
 
     @Override
     public void setDescription(String description) {
+        if (isDescriptionAsHtml()) {
+            description = sanitize(description);
+        }
+
         ((AbstractComponent) component).setDescription(description, descriptionAsHtml
                 ? com.vaadin.shared.ui.ContentMode.HTML
                 : com.vaadin.shared.ui.ContentMode.PREFORMATTED);
@@ -477,6 +492,10 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
 
     @Override
     public void setContextHelpText(String contextHelpText) {
+        if (isContextHelpTextHtmlEnabled()) {
+            contextHelpText = sanitize(contextHelpText);
+        }
+
         ((AbstractComponent) getComposition()).setContextHelpText(contextHelpText);
     }
 
@@ -487,7 +506,11 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
 
     @Override
     public void setContextHelpTextHtmlEnabled(boolean enabled) {
-        ((AbstractComponent) getComposition()).setContextHelpTextHtmlEnabled(enabled);
+        if (isContextHelpTextHtmlEnabled() != enabled) {
+            ((AbstractComponent) getComposition()).setContextHelpTextHtmlEnabled(enabled);
+
+            setContextHelpText(getContextHelpText());
+        }
     }
 
     @Override
@@ -574,5 +597,20 @@ public abstract class WebAbstractComponent<T extends com.vaadin.ui.Component>
                 composition.setComponentError(new UserError(errorMessage));
             }
         }
+    }
+
+    @Nullable
+    protected String sanitize(@Nullable String html) {
+        return getWebConfig().getSanitizeComponentsByDefault()
+                ? getHtmlSanitizer().sanitize(html)
+                : html;
+    }
+
+    protected WebConfig getWebConfig() {
+        return beanLocator.get(Configuration.class).getConfig(WebConfig.class);
+    }
+
+    protected HtmlSanitizer getHtmlSanitizer() {
+        return beanLocator.get(HtmlSanitizer.class);
     }
 }

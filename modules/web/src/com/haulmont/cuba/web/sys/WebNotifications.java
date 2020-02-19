@@ -21,6 +21,8 @@ import com.haulmont.cuba.gui.Notifications;
 import com.haulmont.cuba.gui.components.ContentMode;
 import com.haulmont.cuba.gui.executors.BackgroundWorker;
 import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.WebConfig;
+import com.haulmont.cuba.web.sys.sanitizer.HtmlSanitizer;
 import com.vaadin.ui.Notification;
 
 import javax.inject.Inject;
@@ -34,6 +36,11 @@ public class WebNotifications implements Notifications {
     protected AppUI ui;
 
     protected BackgroundWorker backgroundWorker;
+
+    @Inject
+    protected WebConfig webConfig;
+    @Inject
+    protected HtmlSanitizer htmlSanitizer;
 
     public WebNotifications(AppUI ui) {
         this.ui = ui;
@@ -215,6 +222,15 @@ public class WebNotifications implements Notifications {
 
                 if (position != Position.DEFAULT) {
                     vNotification.setPosition(com.vaadin.shared.Position.valueOf(position.name()));
+                }
+
+                if (contentMode == ContentMode.HTML) {
+                    vNotification.setHtmlContentAllowed(true);
+
+                    if (webConfig.getSanitizeComponentsByDefault()) {
+                        vNotification.setCaption(htmlSanitizer.sanitize(getCaption()));
+                        vNotification.setDescription(htmlSanitizer.sanitize(getDescription()));
+                    }
                 }
 
                 vNotification.setHtmlContentAllowed(contentMode == ContentMode.HTML);

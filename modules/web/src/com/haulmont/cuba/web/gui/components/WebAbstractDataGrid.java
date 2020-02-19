@@ -172,6 +172,8 @@ public abstract class WebAbstractDataGrid<C extends Grid<E> & CubaEnhancedGrid<E
     protected Function<? super E, String> rowDescriptionProvider;
     protected CellDescriptionProvider<? super E> cellDescriptionProvider;
 
+    protected ContentMode rowDescriptionContentMode;
+
     protected DetailsGenerator<E> detailsGenerator = null;
 
     protected Registration columnCollapsingChangeListenerRegistration;
@@ -2553,6 +2555,7 @@ public abstract class WebAbstractDataGrid<C extends Grid<E> & CubaEnhancedGrid<E
     @Override
     public void setRowDescriptionProvider(Function<? super E, String> provider, ContentMode contentMode) {
         this.rowDescriptionProvider = provider;
+        this.rowDescriptionContentMode = contentMode;
 
         if (provider != null) {
             component.setDescriptionGenerator(this::getRowDescription,
@@ -2562,8 +2565,15 @@ public abstract class WebAbstractDataGrid<C extends Grid<E> & CubaEnhancedGrid<E
         }
     }
 
+    public ContentMode getRowDescriptionContentMode() {
+        return rowDescriptionContentMode;
+    }
+
     protected String getRowDescription(E item) {
-        return rowDescriptionProvider.apply(item);
+        String rowDescription = rowDescriptionProvider.apply(item);
+        return getRowDescriptionContentMode() == ContentMode.HTML
+                ? sanitize(rowDescription)
+                : rowDescription;
     }
 
     @Override
@@ -2597,7 +2607,10 @@ public abstract class WebAbstractDataGrid<C extends Grid<E> & CubaEnhancedGrid<E
         Column<E> generatedColumn = addGeneratedColumn(columnId, new ColumnGenerator<E, Object>() {
             @Override
             public Object getValue(ColumnGeneratorEvent<E> event) {
-                return generator.getValue(event);
+                Object generatedValue = generator.getValue(event);
+                return column.getRenderer() instanceof HtmlRenderer
+                        ? sanitize((String) generatedValue)
+                        : generatedValue;
             }
 
             @Override
@@ -3459,7 +3472,10 @@ public abstract class WebAbstractDataGrid<C extends Grid<E> & CubaEnhancedGrid<E
 
     protected String getGeneratedCellDescription(E item, Column<E> column) {
         if (column.getDescriptionProvider() != null) {
-            return column.getDescriptionProvider().apply(item);
+            String cellDescription = column.getDescriptionProvider().apply(item);
+            return ((ColumnImpl) column).getDescriptionContentMode() == ContentMode.HTML
+                    ? sanitize(cellDescription)
+                    : cellDescription;
         }
 
         if (cellDescriptionProvider != null) {

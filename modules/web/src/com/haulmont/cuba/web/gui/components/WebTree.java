@@ -122,6 +122,7 @@ public class WebTree<E extends Entity>
     protected TreeDataProvider<E> dataBinding;
     protected Function<? super E, String> itemCaptionProvider;
     protected Function<? super E, String> descriptionProvider;
+    protected ContentMode descriptionContentMode;
     protected Tree.DetailsGenerator<? super E> detailsGenerator;
     protected Registration expandListener;
     protected Registration collapseListener;
@@ -958,12 +959,25 @@ public class WebTree<E extends Entity>
     @Override
     public void setDescriptionProvider(Function<? super E, String> provider, ContentMode contentMode) {
         descriptionProvider = provider;
+        descriptionContentMode = contentMode;
+
         if (provider != null) {
-            component.setItemDescriptionGenerator(descriptionProvider::apply,
+            component.setItemDescriptionGenerator(this::getRowDescription,
                     WebWrapperUtils.toVaadinContentMode(contentMode));
         } else {
             component.setItemDescriptionGenerator(null);
         }
+    }
+
+    public ContentMode getDescriptionContentMode() {
+        return descriptionContentMode;
+    }
+
+    protected String getRowDescription(E item) {
+        String rowDescription = descriptionProvider.apply(item);
+        return getDescriptionContentMode() == ContentMode.HTML
+                ? sanitize(rowDescription)
+                : rowDescription;
     }
 
     @SuppressWarnings("unchecked")

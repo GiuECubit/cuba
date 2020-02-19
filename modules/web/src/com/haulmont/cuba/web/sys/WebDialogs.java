@@ -32,10 +32,12 @@ import com.haulmont.cuba.gui.screen.FrameOwner;
 import com.haulmont.cuba.gui.screen.OpenMode;
 import com.haulmont.cuba.gui.theme.ThemeConstants;
 import com.haulmont.cuba.web.AppUI;
+import com.haulmont.cuba.web.WebConfig;
 import com.haulmont.cuba.web.exception.ExceptionDialog;
 import com.haulmont.cuba.web.gui.components.WebButton;
 import com.haulmont.cuba.web.gui.components.util.ShortcutListenerDelegate;
 import com.haulmont.cuba.web.gui.icons.IconResolver;
+import com.haulmont.cuba.web.sys.sanitizer.HtmlSanitizer;
 import com.haulmont.cuba.web.widgets.CubaButton;
 import com.haulmont.cuba.web.widgets.CubaLabel;
 import com.haulmont.cuba.web.widgets.CubaWindow;
@@ -70,6 +72,11 @@ public class WebDialogs implements Dialogs {
     protected Icons icons;
     @Inject
     protected ClientConfig clientConfig;
+    @Inject
+    protected WebConfig webConfig;
+    @Inject
+    protected HtmlSanitizer htmlSanitizer;
+
     protected ScreenBuilders screenBuilders;
 
     public WebDialogs(AppUI ui) {
@@ -379,6 +386,12 @@ public class WebDialogs implements Dialogs {
                 window.setId(ui.getTestIdManager().getTestId("optionDialog"));
             }
 
+            if (getContentMode() == ContentMode.HTML
+                    && webConfig.getSanitizeComponentsByDefault()) {
+                String sanitizedValue = htmlSanitizer.sanitize(messageLabel.getValue());
+                messageLabel.setValue(sanitizedValue);
+            }
+
             ui.addWindow(window);
             window.center();
         }
@@ -617,6 +630,12 @@ public class WebDialogs implements Dialogs {
                         break;
                     }
                 }
+            }
+
+            if (getContentMode() == ContentMode.HTML
+                    && webConfig.getSanitizeComponentsByDefault()) {
+                String sanitizedValue = htmlSanitizer.sanitize(messageLabel.getValue());
+                messageLabel.setValue(sanitizedValue);
             }
 
             ui.addWindow(window);

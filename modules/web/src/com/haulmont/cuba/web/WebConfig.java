@@ -545,4 +545,12 @@ public interface WebConfig extends Config {
     @Property("cuba.web.allowAnonymousAccess")
     @DefaultBoolean(false)
     boolean getAllowAnonymousAccess();
+
+    /**
+     * Defines whether to sanitize the value of components using {@link com.haulmont.cuba.web.sys.sanitizer.HtmlSanitizer}
+     * to prevent Cross-site Scripting (XSS) in HTML context.
+     */
+    @DefaultBoolean(true)
+    @Property("cuba.web.sanitizeComponentsByDefault")
+    boolean getSanitizeComponentsByDefault();
 }
