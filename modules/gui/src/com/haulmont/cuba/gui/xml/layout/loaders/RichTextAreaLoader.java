@@ -18,11 +18,21 @@
 package com.haulmont.cuba.gui.xml.layout.loaders;
 
 import com.haulmont.cuba.gui.components.RichTextArea;
+import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Element;
 
 public class RichTextAreaLoader extends AbstractTextFieldLoader<RichTextArea> {
     @Override
     public void createComponent() {
         resultComponent = factory.create(RichTextArea.NAME);
         loadId(resultComponent, element);
+        loadSanitizerEnabled(resultComponent, element);
+    }
+
+    protected void loadSanitizerEnabled(RichTextArea resultComponent, Element element) {
+        String sanitizerEnabled = element.attributeValue("sanitizerEnabled");
+        if (StringUtils.isNotEmpty(sanitizerEnabled)) {
+            resultComponent.setSanitizerEnabled(Boolean.parseBoolean(sanitizerEnabled));
+        }
     }
 }

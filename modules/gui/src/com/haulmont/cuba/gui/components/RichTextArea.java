@@ -23,4 +23,16 @@ package com.haulmont.cuba.gui.components;
 public interface RichTextArea extends TextInputField<String> {
 
     String NAME = "richTextArea";
+
+    /**
+     * @return html sanitizer is enabled
+     */
+    boolean isSanitizerEnabled();
+
+    /**
+     * Sets whether html sanitizer is enabled or not.
+     *
+     * @param sanitizerEnabled specifies whether html sanitizer is enabled
+     */
+    void setSanitizerEnabled(boolean sanitizerEnabled);
 }

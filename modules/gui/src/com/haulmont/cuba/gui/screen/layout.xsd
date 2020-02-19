@@ -1892,6 +1892,7 @@
         <xs:complexContent>
             <xs:extension base="baseTextComponent">
                 <xs:attributeGroup ref="hasBuffered"/>
+                <xs:attribute name="sanitizerEnabled" type="xs:boolean"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
